@@ -1,31 +1,83 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Sphere, MeshDistortMaterial } from '@react-three/drei';
-import { motion } from 'framer-motion';
+import { OrbitControls, Line } from '@react-three/drei';
+import * as THREE from 'three';
 
-// The animated 3D object
-const AnimatedSphere = () => {
-  const meshRef = useRef();
+// Distributed systems network graph
+const NetworkGraph = () => {
+  const groupRef = useRef();
+  
+  // Create 15 nodes with random positions
+  const NODE_COUNT = 15;
+  const nodes = useMemo(() => {
+    return Array.from({ length: NODE_COUNT }, () => new THREE.Vector3(
+      (Math.random() - 0.5) * 4.5,
+      (Math.random() - 0.5) * 4.5,
+      (Math.random() - 0.5) * 4.5
+    ));
+  }, []);
 
+  // Connect nodes if they are close to each other
+  const lines = useMemo(() => {
+    const connections = [];
+    for (let i = 0; i < NODE_COUNT; i++) {
+      for (let j = i + 1; j < NODE_COUNT; j++) {
+        const dist = nodes[i].distanceTo(nodes[j]);
+        if (dist < 2.8) { // Maximum connection distance
+          connections.push([nodes[i], nodes[j]]);
+        }
+      }
+    }
+    return connections;
+  }, [nodes]);
+
+  // Rotate entire group slowly, add scroll influence, and add floating effect to nodes
   useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.x = state.clock.getElapsedTime() * 0.2;
-      meshRef.current.rotation.y = state.clock.getElapsedTime() * 0.3;
+    const time = state.clock.getElapsedTime();
+    const scrollY = window.scrollY; // Get scroll position directly for performance
+    
+    if (groupRef.current) {
+      // Auto-rotation combined with scroll-based rotation
+      groupRef.current.rotation.y = time * 0.1 + (scrollY * 0.002);
+      groupRef.current.rotation.x = scrollY * 0.001; // Tilt slightly on scroll
+      groupRef.current.rotation.z = Math.sin(time * 0.05) * 0.1;
+      
+      // Floating effect for individual nodes
+      groupRef.current.children.forEach((child, i) => {
+        if (child.isMesh) {
+           child.position.y += Math.sin(time * 1.5 + i) * 0.002;
+        }
+      });
     }
   });
 
   return (
-    <Sphere ref={meshRef} args={[1.5, 64, 64]} scale={1.2}>
-      <MeshDistortMaterial
-        color="#3b82f6"
-        attach="material"
-        distort={0.4}
-        speed={1.5}
-        roughness={0.2}
-        transparent
-        opacity={0.8}
-      />
-    </Sphere>
+    <group ref={groupRef}>
+      {/* Node Spheres */}
+      {nodes.map((pos, i) => (
+        <mesh key={i} position={pos}>
+          <sphereGeometry args={[0.08, 16, 16]} />
+          <meshStandardMaterial 
+            color="#3b82f6" 
+            emissive="#3b82f6" 
+            emissiveIntensity={1.5} 
+            toneMapped={false} 
+          />
+        </mesh>
+      ))}
+      
+      {/* Connecting Lines */}
+      {lines.map((line, i) => (
+        <Line
+          key={`line-${i}`}
+          points={line}
+          color="#60a5fa"
+          lineWidth={1}
+          opacity={0.3}
+          transparent
+        />
+      ))}
+    </group>
   );
 };
 
@@ -45,23 +97,15 @@ const HeroCanvas = () => {
     setMounted(true);
   }, []);
 
-  if (!mounted) return <Fallback />;
+  if (!mounted || hasError) return <Fallback />;
 
-  if (hasError) {
-    return <Fallback />;
-  }
-
-  // Error boundary logic inside React isn't perfectly catching WebGL context loss dynamically without class components,
-  // but we can try-catch the initial render context via a standard ErrorBoundary or relying on standard failure.
-  // Actually, WebGL errors usually manifest as canvas creation failures. 
-  
   return (
-    <div className="w-full h-[300px] md:h-[400px] relative">
+    <div className="w-full h-[350px] md:h-[450px] relative pointer-events-auto">
        {/* Background glow to blend in */}
        <div className="absolute inset-0 bg-blue-500/5 blur-[100px] rounded-full -z-10"></div>
        
        <Canvas
-         camera={{ position: [0, 0, 5], fov: 45 }}
+         camera={{ position: [0, 0, 6], fov: 50 }}
          gl={{ preserveDrawingBuffer: true, antialias: true, alpha: true }}
          onCreated={({ gl }) => {
            gl.setClearColor(0x000000, 0); // Transparent background
@@ -69,16 +113,15 @@ const HeroCanvas = () => {
          onError={() => setHasError(true)}
        >
          <ambientLight intensity={0.5} />
-         <directionalLight position={[10, 10, 5]} intensity={1.5} color="#ffffff" />
-         <directionalLight position={[-10, -10, -5]} intensity={0.5} color="#3b82f6" />
+         <directionalLight position={[10, 10, 5]} intensity={2} color="#ffffff" />
          
-         <AnimatedSphere />
+         <NetworkGraph />
          
          <OrbitControls 
            enableZoom={false} 
            enablePan={false}
-           autoRotate
-           autoRotateSpeed={0.5}
+           minPolarAngle={Math.PI / 3}
+           maxPolarAngle={Math.PI / 1.5}
          />
        </Canvas>
     </div>
