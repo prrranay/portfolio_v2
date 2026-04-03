@@ -1,69 +1,177 @@
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
 const Contact = () => {
+  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+  const [status, setStatus] = useState('idle'); // idle | loading | success | error
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus('loading');
+    
+    // Simulate API call
+    setTimeout(() => {
+      setStatus('success');
+      setFormData({ name: '', email: '', message: '' });
+      
+      // Reset after 3 seconds
+      setTimeout(() => setStatus('idle'), 3000);
+    }, 1500);
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
   return (
-    <section id="contact" className="py-24 px-6 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-1/3 h-full bg-blue-500/5 blur-[120px] -z-10"></div>
-      <div className="max-w-4xl mx-auto text-center space-y-12">
-        <div className="space-y-4">
-          <h2 className="text-4xl md:text-5xl font-bold">Get In Touch</h2>
-          <p className="text-lg text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
-            I'm currently looking for new opportunities. My inbox is always open. Whether you have a question or just want to say hi, I'll try my best to get back to you!
+    <section id="contact" className="py-32 px-6 bg-white dark:bg-dark-primary relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute bottom-0 left-0 w-full h-[500px] bg-blue-500/5 blur-[120px] -z-10"></div>
+      
+      <div className="max-w-6xl mx-auto">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16 space-y-4"
+        >
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white">
+            Let's <span className="text-blue-600">Connect</span>
+          </h2>
+          <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+            Whether you're looking for a lead backend engineer or just want to discuss distributed systems, I'm always open to new connections.
           </p>
+        </motion.div>
+
+        <div className="grid lg:grid-cols-2 gap-16 items-start">
+          {/* Contact Info */}
+          <motion.div 
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="space-y-8"
+          >
+            <div className="space-y-6">
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Contact Information</h3>
+              <p className="text-slate-600 dark:text-slate-400">
+                I typically respond within 24 hours. Feel free to reach out via email or any of my social profiles.
+              </p>
+            </div>
+
+            <div className="grid gap-6">
+              {[
+                { label: 'Email', value: 'hello@pranay.dev', icon: 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
+                { label: 'GitHub', value: 'github.com/pranay', icon: 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4' },
+                { label: 'LinkedIn', value: 'linkedin.com/in/pranay', icon: 'M13 10V3L4 14h7v7l9-11h-7z' }
+              ].map((item, i) => (
+                <div key={i} className="flex items-center space-x-4 p-4 rounded-2xl bg-slate-50 dark:bg-dark-secondary border border-slate-200 dark:border-slate-800 hover:border-blue-500/30 transition-all group">
+                  <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform text-blue-600">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={item.icon} />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{item.label}</p>
+                    <p className="text-slate-900 dark:text-white font-medium">{item.value}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Contact Form */}
+          <motion.div 
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="p-8 bg-slate-50 dark:bg-dark-secondary rounded-3xl border border-slate-200 dark:border-slate-800 relative shadow-sm"
+          >
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-cyan-400"></div>
+            
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-400 uppercase tracking-widest pl-1">Full Name</label>
+                <input 
+                  required
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  type="text" 
+                  placeholder="John Doe" 
+                  className="w-full px-6 py-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/50 focus:border-blue-500 outline-none transition-all dark:text-white placeholder:text-slate-400"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-400 uppercase tracking-widest pl-1">Email Address</label>
+                <input 
+                  required
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  type="email" 
+                  placeholder="john@example.com" 
+                  className="w-full px-6 py-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/50 focus:border-blue-500 outline-none transition-all dark:text-white placeholder:text-slate-400"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-400 uppercase tracking-widest pl-1">Message</label>
+                <textarea 
+                  required
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
+                  placeholder="I'd like to collaborate on..." 
+                  rows="4"
+                  className="w-full px-6 py-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/50 focus:border-blue-500 outline-none transition-all dark:text-white placeholder:text-slate-400"
+                ></textarea>
+              </div>
+
+              <button 
+                type="submit"
+                disabled={status !== 'idle'}
+                className={`w-full py-4 rounded-2xl font-bold transition-all flex items-center justify-center space-x-2 ${
+                  status === 'success' 
+                    ? 'bg-emerald-500 text-white' 
+                    : 'bg-blue-600 hover:bg-blue-700 text-white shadow-xl shadow-blue-500/20 active:scale-95 disabled:opacity-70 disabled:hover:bg-blue-600'
+                }`}
+              >
+                <AnimatePresence mode="wait">
+                  {status === 'loading' && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"
+                    />
+                  )}
+                  {status === 'success' && (
+                    <motion.span
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0 }}
+                    > 
+                      Sent Successfully!
+                    </motion.span>
+                  )}
+                  {status === 'idle' && (
+                    <motion.span
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    >
+                      Send Message
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </button>
+            </form>
+          </motion.div>
         </div>
-
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="p-6 rounded-2xl bg-slate-50 dark:bg-dark-secondary border border-transparent hover:border-blue-500/30 transition-all group">
-            <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-              <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <h4 className="font-bold mb-1">Email</h4>
-            <p className="text-sm text-slate-500">hello@portfolio.com</p>
-          </div>
-
-          <div className="p-6 rounded-2xl bg-slate-50 dark:bg-dark-secondary border border-transparent hover:border-blue-500/30 transition-all group">
-            <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-              <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-              </svg>
-            </div>
-            <h4 className="font-bold mb-1">Github</h4>
-            <p className="text-sm text-slate-500">github.com/pranay</p>
-          </div>
-
-          <div className="p-6 rounded-2xl bg-slate-50 dark:bg-dark-secondary border border-transparent hover:border-blue-500/30 transition-all group">
-            <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-              <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <h4 className="font-bold mb-1">LinkedIn</h4>
-            <p className="text-sm text-slate-500">linkedin.com/in/pranay</p>
-          </div>
-        </div>
-
-        <form className="max-w-2xl mx-auto space-y-4 pt-12">
-          <div className="grid md:grid-cols-2 gap-4">
-            <input 
-              type="text" 
-              placeholder="Name" 
-              className="w-full px-6 py-4 rounded-xl bg-slate-50 dark:bg-dark-secondary border border-slate-200 dark:border-slate-800 focus:border-blue-500 outline-none transition-all"
-            />
-            <input 
-              type="email" 
-              placeholder="Email" 
-              className="w-full px-6 py-4 rounded-xl bg-slate-50 dark:bg-dark-secondary border border-slate-200 dark:border-slate-800 focus:border-blue-500 outline-none transition-all"
-            />
-          </div>
-          <textarea 
-            placeholder="Message" 
-            rows="5"
-            className="w-full px-6 py-4 rounded-xl bg-slate-50 dark:bg-dark-secondary border border-slate-200 dark:border-slate-800 focus:border-blue-500 outline-none transition-all"
-          ></textarea>
-          <button className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-blue-500/25 active:scale-95">
-            Send Message
-          </button>
-        </form>
       </div>
     </section>
   );

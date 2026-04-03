@@ -31,15 +31,11 @@ const NetworkGraph = () => {
     return connections;
   }, [nodes]);
 
-  // Rotate entire group slowly, add scroll influence, and add floating effect to nodes
+  // Rotate entire group slowly and add floating effect to nodes
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
-    const scrollY = window.scrollY; // Get scroll position directly for performance
-    
     if (groupRef.current) {
-      // Auto-rotation combined with scroll-based rotation
-      groupRef.current.rotation.y = time * 0.1 + (scrollY * 0.002);
-      groupRef.current.rotation.x = scrollY * 0.001; // Tilt slightly on scroll
+      groupRef.current.rotation.y = time * 0.1;
       groupRef.current.rotation.z = Math.sin(time * 0.05) * 0.1;
       
       // Floating effect for individual nodes
@@ -100,7 +96,7 @@ const HeroCanvas = () => {
   if (!mounted || hasError) return <Fallback />;
 
   return (
-    <div className="w-full h-[350px] md:h-[450px] relative pointer-events-auto">
+    <div className="w-full h-[250px] md:h-[450px] relative pointer-events-auto">
        {/* Background glow to blend in */}
        <div className="absolute inset-0 bg-blue-500/5 blur-[100px] rounded-full -z-10"></div>
        
