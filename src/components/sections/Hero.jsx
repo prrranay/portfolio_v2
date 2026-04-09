@@ -15,7 +15,7 @@ const Hero = () => {
              transition={{ duration: 0.6 }}
              className="inline-block px-4 py-1.5 bg-blue-500/10 text-blue-500 rounded-full text-[10px] md:text-xs font-bold tracking-widest uppercase border border-blue-500/20 shadow-sm"
           >
-            Senior Backend Engineer
+            Full Stack Developer
           </motion.div>
 
           <div className="space-y-4 md:space-y-6">
