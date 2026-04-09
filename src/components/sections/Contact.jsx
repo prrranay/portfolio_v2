@@ -1,15 +1,52 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { contactData } from '../../data/contact';
+import { Turnstile } from '@marsidev/react-turnstile';
 import emailjs from '@emailjs/browser';
 
 const Contact = () => {
-  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', message: '', company: '' });
+  const [errors, setErrors] = useState({});
   const [status, setStatus] = useState('idle'); // idle | loading | success | error
+  const [turnstileToken, setTurnstileToken] = useState(null);
+  const [loadTime] = useState(Date.now());
+  const [lastSubmitTime, setLastSubmitTime] = useState(0);
+  const turnstileRef = useRef();
+
+  const validateForm = () => {
+    const newErrors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.name.trim()) newErrors.name = 'Name is required';
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!emailRegex.test(formData.email.trim())) {
+      newErrors.email = 'Valid email is required';
+    }
+    if (!formData.message.trim()) newErrors.message = 'Message is required';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (formData.company) { // Honeypot
+      setStatus('success');
+      return;
+    }
+    if (Date.now() - loadTime < 3000) return; // Time-based
+    if (Date.now() - lastSubmitTime < 10000) { // Rate limit
+      alert('Please wait a moment before sending another message.');
+      return;
+    }
+    if (!turnstileToken) { // Turnstile
+      alert('Please complete the verification.');
+      return;
+    }
+    if (!validateForm()) return;
+
     setStatus('loading');
+    setLastSubmitTime(Date.now());
     
     const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
     const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
@@ -24,25 +61,28 @@ const Contact = () => {
           email: formData.email,
           message: formData.message,
           to_name: 'Pranay',
+          sent_at: new Date().toLocaleString(),
         },
         publicKey
       );
 
       setStatus('success');
-      setFormData({ name: '', email: '', message: '' });
-      
-      // Reset after 3 seconds
-      setTimeout(() => setStatus('idle'), 3000);
+      setFormData({ name: '', email: '', message: '', company: '' });
+      setTurnstileToken(null);
+      turnstileRef.current?.reset();
+      setTimeout(() => setStatus('idle'), 5000);
     } catch (error) {
       console.error('EmailJS Error:', error);
       setStatus('error');
-      // Reset error status after 5 seconds to allow retry
       setTimeout(() => setStatus('idle'), 5000);
     }
   };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (errors[e.target.name]) {
+      setErrors({ ...errors, [e.target.name]: undefined });
+    }
   };
 
   return (
@@ -110,6 +150,9 @@ const Contact = () => {
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-cyan-400"></div>
             
             <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="hidden">
+                <input type="text" name="company" value={formData.company} onChange={handleChange} tabIndex={-1} autoComplete="off" />
+              </div>
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-400 uppercase tracking-widest pl-1">Full Name</label>
                 <input 
@@ -119,8 +162,9 @@ const Contact = () => {
                   onChange={handleChange}
                   type="text" 
                   placeholder="John Doe" 
-                  className="w-full px-6 py-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/50 focus:border-blue-500 outline-none transition-all dark:text-white placeholder:text-slate-400"
+                  className={`w-full px-6 py-4 rounded-2xl bg-white dark:bg-slate-900 border ${errors.name ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700/50'} focus:border-blue-500 outline-none transition-all dark:text-white placeholder:text-slate-400`}
                 />
+                {errors.name && <p className="text-rose-500 text-xs pl-1 mt-1">{errors.name}</p>}
               </div>
 
               <div className="space-y-2">
@@ -132,8 +176,9 @@ const Contact = () => {
                   onChange={handleChange}
                   type="email" 
                   placeholder="john@example.com" 
-                  className="w-full px-6 py-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/50 focus:border-blue-500 outline-none transition-all dark:text-white placeholder:text-slate-400"
+                  className={`w-full px-6 py-4 rounded-2xl bg-white dark:bg-slate-900 border ${errors.email ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700/50'} focus:border-blue-500 outline-none transition-all dark:text-white placeholder:text-slate-400`}
                 />
+                {errors.email && <p className="text-rose-500 text-xs pl-1 mt-1">{errors.email}</p>}
               </div>
 
               <div className="space-y-2">
@@ -145,8 +190,17 @@ const Contact = () => {
                   onChange={handleChange}
                   placeholder="I'd like to collaborate on..." 
                   rows="4"
-                  className="w-full px-6 py-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/50 focus:border-blue-500 outline-none transition-all dark:text-white placeholder:text-slate-400"
+                  className={`w-full px-6 py-4 rounded-2xl bg-white dark:bg-slate-900 border ${errors.message ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700/50'} focus:border-blue-500 outline-none transition-all dark:text-white placeholder:text-slate-400`}
                 ></textarea>
+                {errors.message && <p className="text-rose-500 text-xs pl-1 mt-1">{errors.message}</p>}
+              </div>
+
+              <div className="flex justify-center">
+                <Turnstile
+                  ref={turnstileRef}
+                  siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
+                  onSuccess={setTurnstileToken}
+                />
               </div>
 
               <button 
