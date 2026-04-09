@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { terminalCommands } from '../../data/contact';
 
 const Terminal = () => {
   const [input, setInput] = useState('');
@@ -11,11 +12,6 @@ const Terminal = () => {
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
 
-  useEffect(() => {
-    if (!isTyping) {
-      inputRef.current?.focus();
-    }
-  }, [isTyping]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -23,14 +19,7 @@ const Terminal = () => {
     }
   }, [history]);
 
-  const commands = {
-    help: 'Available commands: whoami, projects, skills, contact, clear',
-    whoami: 'Pranay Kumar — Senior Backend Engineer. I specialize in building scalable distributed systems, event-driven architectures (Kafka), and high-performance APIs (Node.js/NestJS).',
-    projects: '1. Full Stack Deployment System (GCP, Nginx, CI/CD)\n2. KYC Backend System (NestJS, Kafka, Redis)',
-    skills: 'Backend: Node.js, NestJS, Go, Python\nDatabases: PostgreSQL, MongoDB, Redis\nInfrastructure: Docker, Kubernetes, GCP, AWS, Kafka',
-    contact: 'Email: hello@pranay.dev\nGitHub: github.com/pranay\nLinkedIn: linkedin.com/in/pranay',
-    clear: 'CLEAR',
-  };
+  const commands = terminalCommands;
 
   const handleCommand = (e) => {
     if (e.key === 'Enter') {
@@ -112,7 +101,6 @@ const Terminal = () => {
               <input
                 ref={inputRef}
                 type="text"
-                autoFocus
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleCommand}

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import HeroCanvas from '../HeroCanvas';
+import { personalInfo } from '../../data/contact';
 
 const Hero = () => {
   return (
@@ -15,7 +16,7 @@ const Hero = () => {
              transition={{ duration: 0.6 }}
              className="inline-block px-4 py-1.5 bg-blue-500/10 text-blue-500 rounded-full text-[10px] md:text-xs font-bold tracking-widest uppercase border border-blue-500/20 shadow-sm"
           >
-            Full Stack Developer
+            {personalInfo.title}
           </motion.div>
 
           <div className="space-y-4 md:space-y-6">
@@ -25,7 +26,7 @@ const Hero = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-slate-900 dark:text-white"
             >
-              Pranay <span className="bg-gradient-to-r from-blue-600 via-cyan-500 to-indigo-500 bg-clip-text text-transparent">Kumar</span>
+              {personalInfo.firstName} <span className="bg-gradient-to-r from-blue-600 via-cyan-500 to-indigo-500 bg-clip-text text-transparent">{personalInfo.lastName}</span>
             </motion.h1>
             
             <motion.h2
@@ -34,7 +35,7 @@ const Hero = () => {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="text-lg md:text-2xl font-medium text-slate-700 dark:text-slate-300 leading-relaxed max-w-lg mx-auto md:mx-0"
             >
-              I build scalable backend systems with event-driven architecture and production-ready deployments.
+              {personalInfo.subtitle}
             </motion.h2>
 
             <motion.p
@@ -43,7 +44,7 @@ const Hero = () => {
               transition={{ duration: 0.6, delay: 0.4 }}
               className="text-base text-slate-500 dark:text-slate-400 font-mono tracking-wide"
             >
-              Node.js • NestJS • Distributed Systems
+              {personalInfo.techStack}
             </motion.p>
           </div>
 
@@ -60,7 +61,7 @@ const Hero = () => {
               View Projects
             </a>
             <a 
-              href="https://github.com/pranay" 
+              href={personalInfo.github} 
               target="_blank"
               rel="noopener noreferrer"
               className="px-6 md:px-8 py-3 md:py-3.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-full text-sm md:text-base font-bold transition-all hover:bg-slate-50 dark:hover:bg-slate-700 hover:scale-105 active:scale-95 shadow-sm"

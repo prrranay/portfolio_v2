@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { contactData } from '../../data/contact';
+import emailjs from '@emailjs/browser';
 
 const Contact = () => {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
@@ -9,14 +11,34 @@ const Contact = () => {
     e.preventDefault();
     setStatus('loading');
     
-    // Simulate API call
-    setTimeout(() => {
+    const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+    const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+
+    try {
+      await emailjs.send(
+        serviceId,
+        templateId,
+        {
+          name: formData.name,
+          email: formData.email,
+          message: formData.message,
+          to_name: 'Pranay',
+        },
+        publicKey
+      );
+
       setStatus('success');
       setFormData({ name: '', email: '', message: '' });
       
       // Reset after 3 seconds
       setTimeout(() => setStatus('idle'), 3000);
-    }, 1500);
+    } catch (error) {
+      console.error('EmailJS Error:', error);
+      setStatus('error');
+      // Reset error status after 5 seconds to allow retry
+      setTimeout(() => setStatus('idle'), 5000);
+    }
   };
 
   const handleChange = (e) => {
@@ -61,11 +83,7 @@ const Contact = () => {
             </div>
 
             <div className="grid gap-6">
-              {[
-                { label: 'Email', value: 'hello@pranay.dev', icon: 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
-                { label: 'GitHub', value: 'github.com/pranay', icon: 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4' },
-                { label: 'LinkedIn', value: 'linkedin.com/in/pranay', icon: 'M13 10V3L4 14h7v7l9-11h-7z' }
-              ].map((item, i) => (
+              {contactData.map((item, i) => (
                 <div key={i} className="flex items-center space-x-4 p-4 rounded-2xl bg-slate-50 dark:bg-dark-secondary border border-slate-200 dark:border-slate-800 hover:border-blue-500/30 transition-all group">
                   <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform text-blue-600">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

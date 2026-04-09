@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { skills } from '../../data/skills';
+import { aboutData } from '../../data/contact';
 
 const About = () => {
   return (
@@ -16,10 +17,10 @@ const About = () => {
           className="text-center mb-20 space-y-4"
         >
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Engineering <span className="text-blue-600">Philosophy</span>
+            {aboutData.philosophyTitle} <span className="text-blue-600">Philosophy</span>
           </h2>
           <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-            I believe in building systems that aren't just functional, but resilient, scalable, and elegantly architected.
+            {aboutData.philosophySubtitle}
           </p>
         </motion.div>
 
@@ -36,12 +37,9 @@ const About = () => {
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-cyan-400"></div>
               <h3 className="text-2xl font-bold mb-6 text-slate-900 dark:text-white">About Me</h3>
               <div className="space-y-4 text-slate-600 dark:text-slate-400 leading-relaxed">
-                <p>
-                  Specializing in robust backend architectures, I design solutions that handle high throughput and complex data transformations seamlessly.
-                </p>
-                <p>
-                  My focus is always on creating an impenetrable foundation: ensuring data consistency through event-driven paradigms, optimizing query latency with proper caching strategies, and deploying via automated CI/CD pipelines.
-                </p>
+                {aboutData.bio.map((paragraph, i) => (
+                  <p key={i}>{paragraph}</p>
+                ))}
               </div>
             </div>
           </motion.div>
